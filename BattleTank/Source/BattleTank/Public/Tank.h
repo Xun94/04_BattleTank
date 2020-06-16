@@ -10,6 +10,7 @@
 class UTankBarrel;
 class UTankTurret;
 class UTankAimingComponent;
+class AProjectile;
 
 UCLASS()
 class BATTLETANK_API ATank : public APawn
@@ -27,7 +28,13 @@ private:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UPROPERTY(EditAnywhere, Category = Firing)
-	float LaunchSpeed = 100000;
+	float LaunchSpeed = 4000;
+
+	UPROPERTY(EditAnywhere, Category = Setup)
+	TSubclassOf<AProjectile> ProjectileBluePrint;
+
+	// Local barrel reference for spawning projectile.
+	UTankBarrel* Barrel = nullptr;
 
 protected:
 	UTankAimingComponent* TankAimingComponent = nullptr;
@@ -35,8 +42,6 @@ protected:
 
 public:	
 
-	
-	
 	UFUNCTION(BlueprintCallable, Category = Setup)
 	void SetBarrelReference(UTankBarrel* BarrelToSet);
 
