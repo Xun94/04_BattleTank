@@ -19,5 +19,5 @@ public:
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = Setup)
-	float DegreesPerSecond = 20;
+	float DegreesPerSecond = 40;
 };
