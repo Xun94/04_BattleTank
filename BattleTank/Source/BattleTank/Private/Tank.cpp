@@ -3,6 +3,7 @@
 #include "TankAimingComponent.h"
 #include "TankBarrel.h"
 #include "Projectile.h"
+#include "TankMovementComponent.h"
 #include "Tank.h"
 
 // Sets default values
@@ -47,13 +48,17 @@ void ATank::AimAt(FVector HitLocation)
 
 void ATank::Fire()
 {
-	if(!Barrel){ return; }
-	// Spawn a projectile at the socket location of the barrel.
+	bool isReloaded = (FPlatformTime::Seconds() - LastFireTime) > ReloadTimeInSeconds;
+
+	if(Barrel && isReloaded){
+		// Spawn a projectile at the socket location of the barrel.
 	auto Projectile = GetWorld()->SpawnActor<AProjectile>(
 		ProjectileBluePrint,
 		Barrel->GetSocketLocation(FName("Projectile")),
 		Barrel->GetSocketRotation(FName("Projectile"))
 		);
-	
 	Projectile->LaunchProjectile(LaunchSpeed);
+	LastFireTime = FPlatformTime::Seconds();
+
+	}
 }
