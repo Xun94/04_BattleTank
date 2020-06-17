@@ -25,6 +25,36 @@ void UTankAimingComponent::Initialise(UTankBarrel* BarrelToSet, UTankTurret* Tur
     Turret = TurretToSet;
 }
 
+void UTankAimingComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	LastFireTime = FPlatformTime::Seconds();
+}
+
+void UTankAimingComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
+{
+	if((FPlatformTime::Seconds() - LastFireTime) < ReloadTimeInSeconds)
+	{
+		FiringState = EFiringState::Reloading;
+	}
+	else if(IsBarrelMoving())
+	{
+		FiringState = EFiringState::Aiming;
+	}
+	else
+	{
+		FiringState = EFiringState::Locked;
+	}
+	
+}
+bool UTankAimingComponent::IsBarrelMoving()
+{
+	if(!Barrel) { return false; }
+	auto BarrelForward = Barrel->GetForwardVector();
+
+	return !BarrelForward.Equals(AimDirection,0.01);
+}
+
 void UTankAimingComponent::AimAt(FVector HitLocation)
 {
 	if(!Barrel) {return;}
@@ -44,13 +74,13 @@ void UTankAimingComponent::AimAt(FVector HitLocation)
 
 	if(bHaveAimSolution)
 	{
-		auto AimDirection = OutLaunchVelocity.GetSafeNormal();
-		MoveBarrelTowards(AimDirection);
-		MoveTurretTowards(AimDirection);		
+		AimDirection = OutLaunchVelocity.GetSafeNormal();
+		MoveBarrelTowardsTarget();
+		MoveTurretTowardsTarget();		
 	}
 }
 
-void UTankAimingComponent::MoveBarrelTowards(FVector AimDirection)
+void UTankAimingComponent::MoveBarrelTowardsTarget()
 {
 	if(!Barrel) { return; }
 	auto BarrelRotator = Barrel->GetForwardVector().Rotation();
@@ -59,7 +89,7 @@ void UTankAimingComponent::MoveBarrelTowards(FVector AimDirection)
 	Barrel->Elevate(DeltaRotator.Pitch);
 }
 
-void UTankAimingComponent::MoveTurretTowards(FVector AimDirection)
+void UTankAimingComponent::MoveTurretTowardsTarget()
 {
 	if(!Turret) { return; }
 	auto TurretRotator = Turret->GetForwardVector().Rotation();
@@ -73,7 +103,7 @@ void UTankAimingComponent::Fire()
 	if(!ensure(Barrel && ProjectileBluePrint)) {return;}
 	bool isReloaded = (FPlatformTime::Seconds() - LastFireTime) > ReloadTimeInSeconds;
 
-	if(isReloaded){
+	if(FiringState != EFiringState::Reloading){
 		// Spawn a projectile at the socket location of the barrel.
 	auto Projectile = GetWorld()->SpawnActor<AProjectile>(
 		ProjectileBluePrint,
