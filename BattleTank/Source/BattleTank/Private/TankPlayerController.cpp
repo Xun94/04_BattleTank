@@ -2,13 +2,12 @@
 
 #include "CoreMinimal.h"
 #include "TankAimingComponent.h"
-#include "Tank.h"
 #include "TankPlayerController.h"
 
 void ATankPlayerController::BeginPlay()
 {
     Super::BeginPlay();
-    auto AimingComponent = GetControlledTank()->FindComponentByClass<UTankAimingComponent>();
+    auto AimingComponent = GetPawn()->FindComponentByClass<UTankAimingComponent>();
     if(!AimingComponent) {return;}   
     FoundAimingComponent(AimingComponent);
 }
@@ -21,19 +20,15 @@ void ATankPlayerController::Tick(float DeltaTime)
 
 }
 
-ATank* ATankPlayerController::GetControlledTank() const
-{
-    return Cast<ATank>(GetPawn());
-}
-
 void ATankPlayerController::AimTowardsCrosshair()
 {
-    if(!GetControlledTank()){ return; }
+    auto AimingComponent = GetPawn()->FindComponentByClass<UTankAimingComponent>();
+    if(!AimingComponent){ return; }
 
     FVector HitLocation; // Out parameter
     if(GetSightRayHitLocation(HitLocation))
     {
-        GetControlledTank()->AimAt(HitLocation);
+        AimingComponent->AimAt(HitLocation);
         //Get world location if linetrace through crosshair
         //If it hits the landscape
             //Tell controlled tank to aim at this point
