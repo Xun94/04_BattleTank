@@ -95,7 +95,15 @@ void UTankAimingComponent::MoveTurretTowardsTarget()
 	auto TurretRotator = Turret->GetForwardVector().Rotation();
 	auto AimAsRotator = AimDirection.Rotation();
 	auto DeltaRotator = AimAsRotator - TurretRotator;
-	Turret->Rotate(DeltaRotator.GetNormalized().Yaw);
+	if(DeltaRotator.GetNormalized().Yaw < 180)
+	{
+		Turret->Rotate(DeltaRotator.GetNormalized().Yaw);
+	}
+	else
+	{
+		Turret->Rotate(-DeltaRotator.GetNormalized().Yaw);
+	}
+	
 }
 
 void UTankAimingComponent::Fire()
